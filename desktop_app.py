@@ -42,6 +42,17 @@ def predict_cardio_risk(*, gender, height, weight, ap_hi, ap_lo,
     return prediction, probability, bmi
 
 
+def bmi_category(bmi):
+    """Standard WHO BMI categories, paired with a bootstrap color tone."""
+    if bmi < 18.5:
+        return "Underweight", "info"
+    if bmi < 25:
+        return "Normal weight", "success"
+    if bmi < 30:
+        return "Overweight", "warning"
+    return "Obese", "danger"
+
+
 def parse_number(entry, field_name, min_value, max_value, is_int=False):
     raw = entry.get().strip()
     try:
@@ -120,7 +131,8 @@ class CardioApp(ttk.Window):
         self.verdict_label = ttk.Label(result_text, textvariable=self.verdict_var, style="Verdict.TLabel")
         self.verdict_label.pack(anchor="w")
         self.bmi_var = tk.StringVar(value="")
-        ttk.Label(result_text, textvariable=self.bmi_var, style="Stat.TLabel").pack(anchor="w", pady=(6, 0))
+        self.bmi_label = ttk.Label(result_text, textvariable=self.bmi_var, style="Stat.TLabel")
+        self.bmi_label.pack(anchor="w", pady=(6, 0))
 
         ttk.Label(
             body,
@@ -185,7 +197,11 @@ class CardioApp(ttk.Window):
         self.result_meter.configure(amount_used=round(probability * 100), bootstyle=tone)
         self.verdict_var.set(verdict)
         self.verdict_label.configure(style="Verdict.TLabel", foreground=self.style.colors.get(tone))
-        self.bmi_var.set(f"BMI: {bmi:.1f}")
+
+        category, category_tone = bmi_category(bmi)
+        self.bmi_var.set(f"BMI: {bmi:.1f} — {category}")
+        self.bmi_label.configure(foreground=self.style.colors.get(category_tone))
+
         self.result_frame.pack(fill="x", pady=(20, 0))
 
 
